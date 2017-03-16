@@ -1,12 +1,14 @@
 import React, {
   Component,
 } from 'react'
+import FileSelector from '../containers/FileSelector'
+import SubmitButton from '../containers/SubmitButton'
+import FileDownloader from '../containers/FileDownloader'
 
 class App extends Component {
   componentDidMount() {
     const {
       socket,
-      addMessage,
       handleSocketOpen,
       handleSocketMessage,
     } = this.props
@@ -14,7 +16,6 @@ class App extends Component {
       handleSocketOpen()
     })
     socket.addEventListener('message', event => {
-      addMessage(event.data)
       handleSocketMessage(event.data)
     })
   }
@@ -25,13 +26,13 @@ class App extends Component {
   }
 
   render() {
-    const { messages } = this.props
+    const { result } = this.props
     return (
       <div>
-        <h1>Hello, world!</h1>
-        {messages.map((item, i) => {
-          return <div key={i}>{item}</div>
-        })}
+        <h1>TEST</h1>
+        <FileSelector />
+        <SubmitButton />
+        <FileDownloader />
       </div>
     )
   }

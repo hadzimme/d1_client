@@ -3,32 +3,44 @@ import {
 } from 'react-redux'
 import App from '../components/App'
 import {
-  addMessage,
-  introduceMyself,
-  receiveMessage,
+  exportPublicKey,
+  importPublicKey,
+  setResult,
 } from '../actions'
 
 const mapStateToProps = state => {
   const {
     socket,
-    messages,
+    file,
+    result,
   } = state
   return {
     socket,
-    messages,
+    file,
+    result,
   }
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    addMessage: message => {
-      dispatch(addMessage(message))
-    },
     handleSocketOpen: () => {
-      //dispatch(introduceMyself())
+      dispatch(exportPublicKey(true))
     },
     handleSocketMessage: data => {
-      //dispatch(receiveMessage(data))
+      const message = JSON.parse(data)
+      switch (message.type) {
+        case 'PUBLIC_KEY':
+          if (message.needResponse) {
+            dispatch(exportPublicKey())
+          }
+          dispatch(importPublicKey(message.jwk))
+          return
+        case 'RESULT':
+          dispatch(setResult(message))
+          return
+        default:
+          return
+      }
     },
   }
 }
