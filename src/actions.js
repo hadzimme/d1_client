@@ -133,14 +133,24 @@ export const encryptAndSubmit = () => {
         }, key, fileRawData)
       })
       .then(data => {
-        const json = JSON.stringify({
-          type: 'RESULT',
-          name: file.name,
-          contentType: file.type,
-          iv: encodeBase64URL(new Uint8Array(iv)),
-          data: encodeBase64URL(new Uint8Array(data)),
+        const formData = new FormData()
+        const blob = new Blob([data], { type: 'application/octet-binary' })
+        formData.append('file', blob)
+        fetch('http://localhost:3000/api/v1/files', {
+          method: 'POST',
+          body: formData,
         })
-        socket.send(json)
+          .then(res => res.json())
+          .then(obj => {
+            const json = JSON.stringify({
+              type: 'RESULT',
+              name: file.name,
+              contentType: file.type,
+              iv: encodeBase64URL(new Uint8Array(iv)),
+              id: obj.id,
+            })
+            socket.send(json)
+          })
       })
       .catch(e => console.log('encryptAndSubmit: %s', e.message))
   }
@@ -153,28 +163,36 @@ export const decryptAndDownload = () => {
       keyPair,
       result,
     } = getState()
-    crypto.subtle.deriveKey({
-      name: 'ECDH',
-      namedCurve: 'P-256',
-      public: remotePublicKey,
-    }, keyPair.privateKey, {
-      name: 'AES-GCM',
-      length: 128,
-    }, false, ['encrypt', 'decrypt'])
-      .then(key => {
-        return crypto.subtle.decrypt({
-          name: 'AES-GCM',
-          iv: decodeBase64URL(result.iv),
-          tagLength: 128,
-        }, key, decodeBase64URL(result.data))
-      })
-      .then(data => {
-        const a = document.createElement('a')
-        const blob = new Blob([data], { type: result.contentType })
-        a.href = window.URL.createObjectURL(blob)
-        a.target = '_blank'
-        a.download = result.name
-        a.click()
+    fetch('http://localhost:3000/api/v1/files/' + result.id)
+      .then(data => data.blob())
+      .then(file => {
+        const fileReader = new FileReader()
+        fileReader.onload = event => {
+          crypto.subtle.deriveKey({
+            name: 'ECDH',
+            namedCurve: 'P-256',
+            public: remotePublicKey,
+          }, keyPair.privateKey, {
+            name: 'AES-GCM',
+            length: 128,
+          }, false, ['encrypt', 'decrypt'])
+            .then(key => {
+              return crypto.subtle.decrypt({
+                name: 'AES-GCM',
+                iv: decodeBase64URL(result.iv),
+                tagLength: 128,
+              }, key, event.target.result)
+            })
+            .then(data => {
+              const a = document.createElement('a')
+              const blob = new Blob([data], { type: result.contentType })
+              a.href = window.URL.createObjectURL(blob)
+              a.target = '_blank'
+              a.download = result.name
+              a.click()
+            })
+        }
+        fileReader.readAsArrayBuffer(file)
       })
       .catch(e => console.log(e.message))
   }
