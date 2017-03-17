@@ -59,11 +59,12 @@ export const exportPublicKey = (needResponse = false) => {
         return crypto.subtle.exportKey('jwk', keyPair.publicKey)
       })
       .then(jwk => {
-        socket.send(JSON.stringify({
+        const json = JSON.stringify({
           type: 'PUBLIC_KEY',
           jwk,
           needResponse,
-        }))
+        })
+        socket.send(json)
       })
       .catch(e => console.log(e.message))
   }
@@ -132,13 +133,14 @@ export const encryptAndSubmit = () => {
         }, key, fileRawData)
       })
       .then(data => {
-        socket.send(JSON.stringify({
+        const json = JSON.stringify({
           type: 'RESULT',
           name: file.name,
           contentType: file.type,
           iv: encodeBase64URL(new Uint8Array(iv)),
           data: encodeBase64URL(new Uint8Array(data)),
-        }))
+        })
+        socket.send(json)
       })
       .catch(e => console.log('encryptAndSubmit: %s', e.message))
   }
