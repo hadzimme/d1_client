@@ -11,13 +11,9 @@ import {
 const mapStateToProps = state => {
   const {
     socket,
-    file,
-    result,
   } = state
   return {
     socket,
-    file,
-    result,
   }
 }
 

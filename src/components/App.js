@@ -26,7 +26,6 @@ class App extends Component {
   }
 
   render() {
-    const { result } = this.props
     return (
       <div>
         <h1>TEST</h1>

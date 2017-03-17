@@ -84,7 +84,9 @@ const encodeBase64URL = data => {
     str = data
   }
   else if (data instanceof Uint8Array) {
-    str = String.fromCharCode.apply(null, data)
+    for (let i = 0; i < data.length; i++) {
+      str += String.fromCharCode(data[i])
+    }
   }
   return btoa(str)
     .replace(/\+/g, '-')
@@ -138,7 +140,7 @@ export const encryptAndSubmit = () => {
           data: encodeBase64URL(new Uint8Array(data)),
         }))
       })
-      .catch(e => console.log(e.message))
+      .catch(e => console.log('encryptAndSubmit: %s', e.message))
   }
 }
 
