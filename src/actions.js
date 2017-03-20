@@ -40,7 +40,7 @@ export const importPublicKey = jwk => {
   return dispatch => {
     crypto.subtle.importKey('jwk', jwk, {
       name: 'ECDH',
-      namedCurve: 'P-256',
+      namedCurve: 'P-521',
     }, false, [])
       .then(key => dispatch(setRemotePublicKey(key)))
       .catch(e => console.log(e.message))
@@ -52,7 +52,7 @@ export const exportPublicKey = (needResponse = false) => {
     const { socket } = getState()
     crypto.subtle.generateKey({
       name: 'ECDH',
-      namedCurve: 'P-256',
+      namedCurve: 'P-521',
     }, false, ['deriveKey', 'deriveBits'])
       .then(keyPair => {
         dispatch(setKeyPair(keyPair))
@@ -119,7 +119,7 @@ export const encryptAndSubmit = () => {
     const iv = crypto.getRandomValues(new Uint8Array(12))
     crypto.subtle.deriveKey({
       name: 'ECDH',
-      namedCurve: 'P-256',
+      namedCurve: 'P-521',
       public: remotePublicKey,
     }, keyPair.privateKey, {
       name: 'AES-GCM',
@@ -170,7 +170,7 @@ export const decryptAndDownload = () => {
         fileReader.onload = event => {
           crypto.subtle.deriveKey({
             name: 'ECDH',
-            namedCurve: 'P-256',
+            namedCurve: 'P-521',
             public: remotePublicKey,
           }, keyPair.privateKey, {
             name: 'AES-GCM',
